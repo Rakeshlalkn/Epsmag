@@ -1,0 +1,30 @@
+version: "2.2"
+   
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=boards
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  
+  web:
+    build: .
+    image: myprjct-django
+    command: python manage.py runserver 0.0.0.0:8002
+    volumes:
+      - .:/code
+    ports:
+      - "8002:8002"
+    depends_on:
+      - db
+    stdin_open: true
+    tty: true
+      
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8083:8080
