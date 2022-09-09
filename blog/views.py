@@ -95,7 +95,26 @@ class UserPostListView(LoginRequiredMixin, ListView):
             can_follow = (Follow.objects.filter(user=logged_user,
                                                 follow_user=visible_user).count() == 0)
         data = super().get_context_data(**kwargs)
-
+        temp = []
+        user = self.visible_user()
+        posts = Post.objects.filter(author=user).order_by('-date_posted')
+        for z in posts:
+            filename=z.document
+            # pdb.set_trace()
+            if filename.name:
+                _filename = filename.name.split('.')
+                ext = _filename[-1]
+                filename = _filename[-1:]
+                filename = '.'.join(filename)
+                z.filename=filename
+            temp.append(z)
+        drop = {"posts":temp}
+        media_url = {'media_url':settings.MEDIA_URL}
+        drop.update(media_url)
+        data['posts'] = posts
+        data['media_url'] = settings.MEDIA_URL
+        data['temp'] = drop
+        print("4444444444444444444444444:::::::::::",data)
         data['user_profile'] = visible_user
         data['can_follow'] = can_follow
         return data
@@ -169,7 +188,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Post
-    fields = ['content']
+    fields = ['content','document']
     template_name = 'blog/post_new.html'
     success_url = '/'
 
@@ -229,6 +248,8 @@ def postpreference(request, postid, userpreference):
         
         if request.method == "POST":
                 eachpost= get_object_or_404(Post, id=postid)
+                print("1:::::::::::::::::1",eachpost)
+                print("1postid:::::::::::::::::postid1",postid)
 
                 obj=''
 
@@ -236,6 +257,7 @@ def postpreference(request, postid, userpreference):
 
                 try:
                         obj= Preference.objects.get(user= request.user, post= eachpost)
+                        print("2:::::::::::::::::2",obj)
 
                         valueobj= obj.value #value of userpreference
 
@@ -243,12 +265,15 @@ def postpreference(request, postid, userpreference):
                         valueobj= int(valueobj)
 
                         userpreference= int(userpreference)
+                        print("3:::::::::::::::::3",userpreference)
                 
                         if valueobj != userpreference:
                                 obj.delete()
 
 
                                 upref= Preference()
+                                print("4:::::::::::::::::4",upref)
+                                
                                 upref.user= request.user
 
                                 upref.post= eachpost
@@ -328,8 +353,7 @@ def postpreference(request, postid, userpreference):
 
 
 
-def about(request):
-    return render(request,'blog/about.html',)
+
 
 
 

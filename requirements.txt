@@ -8,3 +8,4 @@ psycopg2-binary>=2.8
 django-widget-tweaks>=1.4.9
 whitenoise==5.2.0
 djangorestframework
+django-like-systems
